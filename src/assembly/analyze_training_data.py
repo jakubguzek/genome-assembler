@@ -1,3 +1,4 @@
+"""File used for initial look at training data."""
 import sys
 from typing import Dict, List
 
@@ -15,7 +16,7 @@ def parse_fasta(path_to_file: str) -> List[str]:
 
 
 def main() -> int:
-    DATA_PATH = "/home/jakub/Documents/studia/technologie_w_skali_genomowej/projekty/2/training/reads"
+    DATA_PATH = "PATH TO DATA FILE"
     # data: List[str] = []
     # for i in range(1, 4):
     #     data.extend(parse_fasta(f"{DATA_PATH}/reads{i}.fasta"))

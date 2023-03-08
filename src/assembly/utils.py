@@ -4,8 +4,6 @@ import sys
 import itertools
 from typing import List, Generator, Tuple, Dict, Protocol
 
-import graph
-
 
 class Node(Protocol):
     k_minus_1_mer: str
@@ -191,6 +189,7 @@ def generate_all_k_mers(length: int, alphabet: str = "ACTG") -> List[str]:
 
 
 def main() -> int:
+    """MAIN FUNCTIOM IN THIS FILE IS USED ONLY FOR DEBUGGING."""
     # Generate random sequence
     random_seq = random_sequence(55, "ACTG")
     # Generate all hexamers
@@ -205,5 +204,6 @@ def main() -> int:
     return 0
 
 
+# Run main only if this file is run directly and not if it's imported by other module
 if __name__ == "__main__":
     sys.exit(main())

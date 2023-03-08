@@ -1,3 +1,4 @@
+"""Module with function used for preprocessing of input data."""
 import sys
 from typing import List, Dict
 
@@ -62,27 +63,3 @@ def correct_dataset(
         correct_read(read, k, kmer_dist, threshold, mismatches, alphabet)
         for read in data
     ]
-
-
-def main() -> int:
-    # counts: Dict[int, int] = {}
-    # with open("./test_data", "r") as file:
-    #     data = [read.strip("\n") for read in file.readlines()]
-    # k_mers = utils.draw_k_mers(data, 20)
-    # corrected_data = []
-    # for read in data:
-    #     corrected_data.append(correct(read, 20, k_mers, 1))
-    # corrected_k_mers = utils.draw_k_mers(corrected_data, 20)
-    # bins = max(corrected_k_mers.values())
-    # fig, axs = plt.subplots(1, 2, figsize = (12, 5), sharey=True)
-    # axs[0].hist(k_mers.values(), bins)
-    # axs[0].set_xlabel("k-mer count")
-    # axs[0].set_ylabel("# of distinct k-mers with that count")
-    # axs[1].hist(corrected_k_mers.values(), bins)
-    # axs[1].set_xlabel("k-mer count")
-    # plt.show()
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())

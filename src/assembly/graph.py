@@ -1,12 +1,12 @@
+"""Main file of assembly module with de Bruijn Graph and Node classes."""
 import sys
 import copy
-from typing import Any, List, Dict, Optional, Set, Tuple, Union, TypeVar, Type
+from typing import List, Dict,Set, Tuple, TypeVar, Type
 
 import graphviz
 import numpy as np
 
 import utils
-import progress
 import error_correction
 import scs
 from analyze_training_data import parse_fasta
@@ -122,17 +122,6 @@ class DeBruijn:
                     graph.edge(source.k_minus_1_mer, destination.k_minus_1_mer)
         return graph
 
-    def _to_undirected(self) -> Dict[Node, Dict[Node, int]]:
-        undirected: Dict[Node, Dict[Node, int]] = {}
-        graph = copy.copy(self.graph)
-        for node, neighbours in graph.items():
-            undirected.setdefault(node, neighbours)
-            undirected[node] = neighbours
-            for neighbour, weight in neighbours.items():
-                undirected.setdefault(neighbour, {}).setdefault(node, 0)
-                undirected[neighbour][node] += weight
-        return undirected
-
     def __init__(self) -> None:
         self.nodes: Dict[str, Node] = {}
         self.graph: AdjacencyList = {}
@@ -178,6 +167,7 @@ class DeBruijn:
 
     @classmethod
     def from_kmer_hist(cls: Type[S], kmer_hist: Dict[str, int]) -> S:
+        """Creates a de Bruijn graph from k_mer spectrum hashmap."""
         new_graph = cls()
         new_graph.kmer_hist = kmer_hist
         for k_mer, count in kmer_hist.items():
@@ -218,48 +208,16 @@ class DeBruijn:
         """Returns true if the graph is eulerian."""
         return self.has_eulerian_walk() or self.has_eulerian_cycle()
 
-    # Raises NotEulerianGraphError
-    def eulerian_walk_or_cycle(self) -> List[str]:
-        """Returns sequences of nodes corresponding to eulerian walk or cycle on the graph.
-
-        Returned nodes are represented by their k-1mersself.
-        Raises NotEulerianGraphError if graph is not eulerian."""
-        # if not self.is_eulerian():
-        #     raise NotEulerianGraphError
-        g = self.graph
-        if walk := self.has_eulerian_walk():
-            g = g.copy()
-            # If graph has eulerian walk there should be exactly one head nad exactly one tail
-            # That's why we should be able to simply get their values from heads and tails sets
-            head, tail = self.heads.pop(), self.tails.pop()
-            g.setdefault(tail, []).append(head)
-
-        tour: List[Node] = []
-
-        def _visit(node: Node) -> None:
-            while len(g[node]) > 0:
-                destination = g[node].pop()
-                _visit(destination)
-            tour.append(node)
-
-        source = next(iter(g.keys()))
-        _visit(source)
-        tour.reverse()
-        # tour.pop()
-        try:
-            head_index = tour.index(head)  # type: ignore
-            tour = tour[head_index:] + tour[:head_index]
-        except (NameError, ValueError):
-            pass
-        return list(map(str, tour))
-
     def show(self, filename: str, weights: bool = False) -> None:
+        """Saves graph visualization to a file and opens it."""
         self._to_dot(weights=weights).view(filename)
 
     def get_sub_graph(
         self, supergraph: AdjacencyList, node: Node
     ) -> Tuple[AdjacencyList, List[Node]]:
-        """Returns a connected components containing the node from a super-graph"""
+        """Returns a connected components containing the node from a super-graphself.
+
+        Uses recursive dfs to do so."""
         discovered: List[Node] = []
 
         def _travel(node: Node):
@@ -276,6 +234,7 @@ class DeBruijn:
         return sub_graph.copy(), discovered
 
     def connected_components(self) -> List[Dict[Node, Dict[Node, int]]]:
+        """Returns a list of strongly connected components and saves it as an instance variable."""
         visited: Set[Node] = set()
         self.components: List[Dict[Node, Dict[Node, int]]] = []
         for node in self.heads:
@@ -287,9 +246,11 @@ class DeBruijn:
         return self.components
 
     def largest_component(self) -> AdjacencyList:
+        """Returns a strongly connected components with largest number of nodes."""
         return max(self.components, key=lambda x: len(x))
 
     def to_adjacency_matrix(self) -> np.ndarray:
+        """Returns graph as an adejecency matrix representation."""
         adjacency_matrix: np.ndarray = np.zeros([self.node_count, self.node_count])
         nodes = list(self.nodes.values())
         for node in nodes:
@@ -299,6 +260,7 @@ class DeBruijn:
         return adjacency_matrix
 
     def branching_nodes(self) -> List[Node]:
+        """Returns a list of nodes with more than one unique neighbours."""
         branching_nodes: List[Node] = []
         for node, neighbours in self.graph.items():
             if len(set(neighbours)) > 1:
@@ -306,6 +268,7 @@ class DeBruijn:
         return branching_nodes
 
     def _travel_to_tip(self, _from: Node) -> List[Node]:
+        """Helper function. Returns a path from node _from to closest tip."""
         discovered = []
 
         def _travel(node: Node):
@@ -320,6 +283,7 @@ class DeBruijn:
         return discovered
 
     def _travel_to_branch(self, _from: Node) -> List[Node]:
+        """Helper funciton. Returns a path from node _from to closest branching node."""
         discovered = []
 
         def _travel(node: Node):
@@ -334,6 +298,7 @@ class DeBruijn:
         return discovered
 
     def convergent_nodes(self) -> List[Node]:
+        """Returns a list of nodes with more than 1 unique predecessors."""
         counts: Dict[Node, int] = {}
         for neighbours in self.graph.values():
             for node in neighbours:
@@ -343,6 +308,7 @@ class DeBruijn:
         return self.convergent
 
     def _travel_to_convergent(self, _from: Node) -> List[Node]:
+        """Helper function. Returns path from node _from to closest convergent node."""
         discovered = []
 
         def _travel(node: Node):
@@ -357,6 +323,7 @@ class DeBruijn:
         return discovered
 
     def tips_lengths(self) -> List[int]:
+        """Returns list of lengths of dead-end paths in a graph"""
         lengths: List[int] = []
         for node in self.branching_nodes():
             neighbours = self.graph.get(node, {})
@@ -373,6 +340,7 @@ class DeBruijn:
         return lengths
 
     def get_shortest_tips(self) -> List[List[Node]]:
+        """Returns a list of shortest tips in a graph"""
         shortest_tips: List[List[Node]] = []
         for node in self.branching_nodes():
             neighbours = self.graph.get(node, {})
@@ -389,6 +357,10 @@ class DeBruijn:
         return shortest_tips
 
     def trim_short_tips(self, threshold: int):
+        """Returns a new graph, with trimmed tips of lenghts below thresholdself.
+
+        This function does so iteratively. First removing the shortest_tips and then longer
+        ones, until it reaches the threshold length."""
         shortest_tips = self.get_shortest_tips()
         k_mers = set()
         for i in range(threshold):
@@ -401,6 +373,7 @@ class DeBruijn:
         return DeBruijn.from_kmer_hist(new_kmer_hist)
 
     def get_bubbles(self) -> List[List[Node]]:
+        """Returns a list of paths in a graph that are part of 'bubbles'."""
         weaker_bubbles: List[List[Node]] = []
         for node in self.branching_nodes():
             neighbours = self.graph.get(node, {})
@@ -408,6 +381,7 @@ class DeBruijn:
         return weaker_bubbles
     
     def trim_bubbles(self):
+        """Returns a new graph with bubbles removed."""
         bubbles = self.get_bubbles()
         k_mers = set()
         for bubble in bubbles:
@@ -419,6 +393,7 @@ class DeBruijn:
         return DeBruijn.from_kmer_hist(new_kmer_hist)
 
     def merge_nodes(self, k: int, max_length) -> List[str]:
+        """Merges graph nodes into contings using greedy superstring algorithm."""
         contigs = []
         for head in self.heads:
             discovered = []
@@ -441,6 +416,7 @@ class DeBruijn:
 
 
 def main() -> int:
+    """Main function of this module. USED ONLY FOR DEBUGGIN PURPOSES!"""
     data = parse_fasta("../training/reads/reads1.fasta")
     k_mers = utils.draw_k_mers(data, 17)
     data = error_correction.correct_dataset(data, 17, k_mers)
@@ -505,7 +481,7 @@ def main() -> int:
     for i, component in enumerate(components):
         print(f"Merging contig {i}")
         contigs.append(component.merge_nodes(13, 15))
-    for contig in c:
+    for contig in contigs:
         print(f"Number of contigs: {len(contig)}, Contigs' lenght: {[len(c) for c in contig]}")
     with open("./output_contings.fasta", "w") as output:
         for i, contig in enumerate(contigs):
@@ -513,6 +489,6 @@ def main() -> int:
             output.write(f"{contig[0]}\n")
     return 0
 
-
+# Run main only if this module is run directly and not imported
 if __name__ == "__main__":
     sys.exit(main())
