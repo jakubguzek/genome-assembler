@@ -4,7 +4,7 @@ from typing import List, Dict
 
 import matplotlib.pyplot as plt
 
-import utils
+from genome_assembler import utils
 
 
 def create_histogram(k_mers: Dict[str, int]) -> None:

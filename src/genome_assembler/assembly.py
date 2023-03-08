@@ -5,10 +5,10 @@ import argparse
 import sys
 from pathlib import Path
 
-import utils
-import graph
-import error_correction
-import progress
+from genome_assembler import utils
+from genome_assembler import graph
+from genome_assembler import error_correction
+from genome_assembler import progress
 
 # Keep script name in global constant
 SCRIPT_NAME = Path(__file__).name
@@ -16,7 +16,9 @@ SCRIPT_NAME = Path(__file__).name
 
 def parse_args() -> argparse.Namespace:
     """Returns parsed command line arguments"""
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="A CLI genome assembler based on de Bruijn graph method written in Python."
+    )
     parser.add_argument("input", type=str, help="input fasta file with reads")
     parser.add_argument("output", type=str, help="output fasta file with contigs")
     parser.add_argument(

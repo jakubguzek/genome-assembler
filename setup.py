@@ -22,7 +22,7 @@ def read(*names: Any, **kwargs: dict[str, str]):
 
 setup(
     name="Genome Assembler",
-    version="0.1.2",
+    version="0.2.0",
     license="MIT",
     description="A CLI genome assembler based on de Bruijn graph method written in Python ",
     long_description="{}\n{}".format(
@@ -53,17 +53,12 @@ setup(
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
-        # uncomment if you test on these interpreters:
-        # 'Programming Language :: Python :: Implementation :: IronPython',
-        # 'Programming Language :: Python :: Implementation :: Jython',
-        # 'Programming Language :: Python :: Implementation :: Stackless',
         "Topic :: Utilities",
         "Private :: Do Not Upload",
     ],
     keywords=["genome" "assembly", "de Bruijn" "python", "graph"],
     python_requires=">=3.10",
     install_requires=[
-        # eg: 'aspectlib==1.1.1', 'six>=1.7',
         "biopython==1.80",
         "contourpy==1.0.7",
         "cycler==0.11.0",

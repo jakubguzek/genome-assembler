@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+from sys import exit
+from genome_assembler import assembly
+
+if __name__ == "__main__":
+    args = assembly.parse_args()
+    exit(
+        assembly.main(args.input, args.output, args.kmer_size, args.threshold, args.mismatches)
+    )

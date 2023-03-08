@@ -6,10 +6,10 @@ from typing import List, Dict,Set, Tuple, TypeVar, Type
 import graphviz
 import numpy as np
 
-import utils
-import error_correction
-import scs
-from analyze_training_data import parse_fasta
+from genome_assembler import utils
+from genome_assembler import error_correction
+from genome_assembler import scs
+from genome_assembler.analyze_training_data import parse_fasta
 
 sys.setrecursionlimit(100000)
 

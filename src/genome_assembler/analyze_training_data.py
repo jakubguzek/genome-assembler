@@ -4,7 +4,7 @@ from typing import Dict, List
 
 import matplotlib.pyplot as plt
 
-import utils, error_correction
+from genome_assembler import utils, error_correction
 
 def parse_fasta(path_to_file: str) -> List[str]:
     sequences: List[str] = []
